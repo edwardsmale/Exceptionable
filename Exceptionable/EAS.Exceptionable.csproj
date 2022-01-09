@@ -43,6 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClassesUsedForExamples.cs" />
+    <Compile Include="PaymentServiceExample_WithExceptionable.cs" />
+    <Compile Include="PaymentServiceExample_WithExceptions.cs" />
     <Compile Include="Exceptionable.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

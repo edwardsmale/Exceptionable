@@ -11,43 +11,31 @@ namespace EAS.Exceptionable
 
                 var result = MethodThatReturnsExceptionable(42);
 
-                Assert(result == "42 is a great number.");
+                Assert(
+                    result.HasValue == true,
+                    $"An {nameof(Exceptionable<int>)} containing a value has {nameof(result.HasValue)} == true."
+                );
+
+                Assert(
+                    result == "42 is a great number.", 
+                    nameof(MethodThatReturnsExceptionable) + " should return a value when the input is valid."
+                );
             }
 
             {
                 // A method with return type Exceptionable<T> can return an exception:
 
-                var result = MethodThatReturnsExceptionable(100);
+                var result = MethodThatReturnsExceptionable(-1);
 
-                Assert(result.Exception.GetType() == typeof(ArgumentException));
-            }
+                Assert(
+                    result.HasException == true,
+                    $"An {nameof(Exceptionable<int>)} containing a value has {nameof(result.HasException)} == true."
+                );
 
-            {
-                // An Exceptionable<T> can be tested for a value like this:
-
-                var result = MethodThatReturnsExceptionable(100);
-
-                if (result)
-                {
-                    Console.WriteLine("The result has a value.");
-                }
-
-                if (!result)
-                {
-                    Console.WriteLine("The result has no value.");
-                }
-
-                var flag = false;
-
-                if (flag && result)
-                {
-                    Console.WriteLine("The flag is true and the result has a value.");
-                }
-
-                if (!flag || !result)
-                {
-                    Console.WriteLine("Either the flag is false or the result has no value.");
-                }
+                Assert(
+                    result.Exception.GetType() == typeof(ArgumentException), 
+                    nameof(MethodThatReturnsExceptionable) + " should return an exception when the input is invalid."
+                );
             }
 
             {
@@ -55,8 +43,10 @@ namespace EAS.Exceptionable
 
                 // An Exceptionable<T> can be compared to a T for equality:
 
-                Assert(exceptionable == 3);
-                Assert(3 == exceptionable);
+                Assert(
+                    exceptionable == 3, 
+                    $"An {nameof(Exceptionable<int>)} containing a value can be compared for equality."
+                );
             }
 
             {
@@ -64,7 +54,10 @@ namespace EAS.Exceptionable
 
                 Exceptionable<int> exceptionable = 99;
 
-                Assert(exceptionable == 99);
+                Assert(
+                    exceptionable == 99, 
+                    $"An {nameof(Exceptionable<int>)} can be assigned an int value."
+                );
             }
 
             {
@@ -74,7 +67,10 @@ namespace EAS.Exceptionable
 
                 var result = MethodThatTakesAString(exceptionable);
 
-                Assert(result == "A piece of text was passed.");
+                Assert(
+                    result == "A piece of text was passed.",
+                    $"An {nameof(Exceptionable<string>)} can be passed to a method that expects a string."
+                );
             }
 
             {
@@ -85,19 +81,78 @@ namespace EAS.Exceptionable
                 try
                 {
                     MethodThatTakesAString(exceptionable); // Will throw
+
+                    Fail($"An {nameof(Exceptionable<string>)} containing an exception will throw when passed to a method expecting a string.");
                 }
-                catch (Exception ex)
+                catch (InvalidOperationException)
                 {
-                    Assert(ex.GetType() == typeof(InvalidOperationException));
+                    // Success
+                }
+                catch (Exception)
+                {
+                    Fail($"An {nameof(Exceptionable<string>)} containing an exception will throw when passed to a method expecting a string.");
                 }
             }
 
-            void Assert(bool condition)
+            {
+                // Payment service with valid account ID and web service working.
+
+                var paymentService = new PaymentServiceExample_WithExceptionable();
+
+                var result = paymentService.TakePayment();
+                
+                Assert(
+                    result == PaymentResultEnum.Success,
+                    "With valid account ID and web service up, TakePayment() returns Success."
+                );
+            }
+
+            {
+                // Payment service with invalid account ID and web service working.
+
+                var paymentService = new PaymentServiceExample_WithExceptionable(accountIdExists: false);
+
+                var result = paymentService.TakePayment();
+
+                Assert(
+                    result == PaymentResultEnum.NoSuchAccount,
+                    "With invalid account ID and web service up, TakePayment() returns NoSuchAccount."
+                );
+            }
+
+            {
+                // Payment service with valid account ID and web service down.
+
+                var paymentService = new PaymentServiceExample_WithExceptionable(isWebServiceDown: true);
+
+                var result = paymentService.TakePayment();
+
+                Assert(
+                    result == PaymentResultEnum.WebServiceCallFailed,
+                    "With valid account ID and web service down, TakePayment() returns WebServiceCallFailed."
+                );
+            }
+
+            void Assert(bool condition, string message)
             {
                 if (!condition)
                 {
-                    throw new Exception("Assert failed.");
+                    Fail("Failure:" + message);
                 }
+                else
+                {
+                    Success("Success: " + message);
+                }
+            }
+
+            void Success(string message) => Print(message, ConsoleColor.Green);
+            void Fail(string message) => Print(message, ConsoleColor.Red);
+
+            void Print(string message, ConsoleColor color)
+            {
+                Console.ForegroundColor = color;
+                Console.WriteLine(message);
+                Console.ForegroundColor = ConsoleColor.Gray;
             }
         }
 
@@ -106,11 +161,11 @@ namespace EAS.Exceptionable
             return str + " was passed.";
         }
 
-        public static Exceptionable<string> MethodThatReturnsExceptionable(int number)
+        public static Exceptionable<string> MethodThatReturnsExceptionable(int positiveNumber)
         {
-            if (number <= 42)
+            if (positiveNumber > 0)
             {
-                return number + " is a great number.";
+                return positiveNumber + " is a great number.";
             }
             else
             {
