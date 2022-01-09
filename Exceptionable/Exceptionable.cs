@@ -25,24 +25,6 @@ namespace EAS.Exceptionable
             this.Exception = ex;
         }
 
-        // The true and false operators and the boolean cast operator allow an Exceptionable<T>
-        // to be used in a conditional, e.g.
-        //
-        //     var response = this.GetResponse();  // Returns Exceptionable<ResponseObject>
-        //
-        //     if (response)
-        //     {
-        //         ...
-        //     }
-        //
-        //     if (!response)
-        //     {
-        //         ...
-        //     }
-        public static bool operator true(Exceptionable<T> m) => m.HasValue;
-        public static bool operator false(Exceptionable<T> m) => !m.HasValue;
-        public static implicit operator bool(Exceptionable<T> m) => m.HasValue;
-
         // Allows an Exceptionable<T> to be passed to a method that takes a T parameter:
         public static implicit operator T(Exceptionable<T> m)
         {
