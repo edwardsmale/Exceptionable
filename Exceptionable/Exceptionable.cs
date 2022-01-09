@@ -6,6 +6,7 @@ namespace EAS.Exceptionable
     {
         public readonly T Value;
         public readonly bool HasValue;
+        public readonly bool HasException;
         public readonly Exception Exception;
 
         /// <summary>
@@ -23,6 +24,7 @@ namespace EAS.Exceptionable
         public Exceptionable(Exception ex)
         {
             this.Exception = ex;
+            this.HasException = true;
         }
 
         // Allows an Exceptionable<T> to be passed to a method that takes a T parameter:
